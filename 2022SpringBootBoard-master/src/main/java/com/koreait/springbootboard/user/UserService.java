@@ -4,6 +4,7 @@ import com.koreait.springbootboard.MyUserUtils;
 import com.koreait.springbootboard.user.model.UserEntity;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.rmi.server.ExportException;
@@ -13,11 +14,13 @@ public class UserService {
 
     @Autowired private UserMapper mapper;
     @Autowired private MyUserUtils userUtils;
+    @Autowired private PasswordEncoder passwordEncoder;
 
     public int join(UserEntity entity) {
         //유효성 검사
 
-        String hashedUpw = BCrypt.hashpw(entity.getUpw(), BCrypt.gensalt());
+        //String hashedUpw = BCrypt.hashpw(entity.getUpw(), BCrypt.gensalt());
+        String hashedUpw = passwordEncoder.encode(entity.getUpw());
         entity.setUpw(hashedUpw);
         try {
             return mapper.insUser(entity);

@@ -1,0 +1,67 @@
+package com.koreait.springbootboard;
+
+import com.sun.jdi.event.ExceptionEvent;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import javax.sql.DataSource;
+
+@Configuration
+    //SpringSecurityFilterChain이 자동으로 포함
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Autowired
+    private DataSource dataSource;
+
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception{
+        http
+                .authorizeRequests()
+                .antMatchers("/", "/css/**", "/js/**",
+                    "/board/list", "/board/detail", "/board/detail/item",
+                    "/ajax/comment", "/ajax/board/**")
+                    .permitAll()
+                .anyRequest().authenticated();
+
+
+        http    .formLogin()
+                .loginPage("/user/login")
+                .usernameParameter("uid")
+                .passwordParameter("upw")
+                .permitAll()
+                .and()
+            .logout()
+                .logoutRequestMatcher(new AntPathRequestMatcher("/user/logout"))
+                .invalidateHttpSession(true)
+                .logoutSuccessUrl("/")
+                .permitAll();
+    }
+
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder auth)
+            throws Exception {
+        auth.jdbcAuthentication()
+                .dataSource(dataSource)
+                .usersByUsernameQuery("SELECT uid as username, upw as password, 1 as enabled "
+                        + " FROM t_user "
+                        + " WHERE uid = ?")
+                .authoritiesByUsernameQuery("SELECT uid as username, auth as authority "
+                        + "FROM t_user "
+                        + "WHERE uid = ?");
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+
+}

@@ -16,10 +16,9 @@ public class UserController {
 
     @Autowired private UserService service;
 
+    /*
     @GetMapping("/login")
     public void login(@ModelAttribute UserEntity userEntity) {
-        userEntity.setUid("micro");
-        userEntity.setUpw("1212");
     }
 
     @PostMapping("/login")
@@ -28,6 +27,8 @@ public class UserController {
         System.out.println("result : " + result);
         return "redirect:/";
     }
+
+     */
 
     @GetMapping("/logout")
     public String logoutProc(HttpSession hs) {
